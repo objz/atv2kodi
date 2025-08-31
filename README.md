@@ -35,7 +35,8 @@ const char* WIFI_PASS = "your-pass";
 const char* KODI_HOST = "192.168.x.x";
 const int   KODI_PORT = 8080;
 ```
-after uploading press RST button to restart the device
+after uploading press RST button to restart the device.
+
 make sure kodi has “allow remote control via http” enabled.
 
 ## status
