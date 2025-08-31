@@ -13,7 +13,7 @@ of course apple had to slightly mess with the nec protocol, so i had to decode i
 ### platformio
 ```bash
 pipx install platformio
-git clone https://github.com/objz/appleir2kodi.git
+git clone https://github.com/objz/atv2kodi.git
 cd appleir2kodi
 pio run -t upload
 pio device monitor
