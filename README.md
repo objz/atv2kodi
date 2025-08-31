@@ -1,4 +1,5 @@
-# appleir2kodi
+# atv2kodi
+
 
 a small utility i hacked together one evening because my old apple tv couldn’t run netflix anymore. i had a raspberry pi with kodi, always liked the feel of the apple tv remote, so i wanted to reuse it. an esp8266 with an ir receiver was lying around, so i made it translate the apple tv ir signals into kodi json-rpc over wifi.  
 of course apple had to slightly mess with the nec protocol, so i had to decode it manually instead of just using a library.
