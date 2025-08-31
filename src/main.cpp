@@ -27,8 +27,8 @@
 #define NEC_TOLERANCE_US    220
 
 // ===== WiFi and Kodi configuration =====
-const char* WIFI_SSID   = "Bambus";
-const char* WIFI_PASS   = "jahr1994";
+const char* WIFI_SSID   = "yourssid";
+const char* WIFI_PASS   = "yourpass";
 const char* KODI_HOST   = "192.168.178.148";
 const int   KODI_PORT   = 8080;
 const bool  KODI_AUTH   = false;
