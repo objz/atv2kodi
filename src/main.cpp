@@ -29,7 +29,7 @@
 // ===== WiFi and Kodi configuration =====
 const char* WIFI_SSID   = "yourssid";
 const char* WIFI_PASS   = "yourpass";
-const char* KODI_HOST   = "192.168.178.148";
+const char* KODI_HOST   = "10.0.1.26";
 const int   KODI_PORT   = 8080;
 const bool  KODI_AUTH   = false;
 const char* KODI_USER   = "kodi";
@@ -40,7 +40,7 @@ const uint32_t HOLD_DELAY_MS      = 250;
 const uint32_t REPEAT_RATE_MS     = 110;  
 const uint32_t RELEASE_TIMEOUT_MS = 220;  
 const uint32_t DOUBLECLICK_MS     = 300;  
-const uint32_t HTTP_TIMEOUT_MS    = 600;
+const uint32_t HTTP_TIMEOUT_MS    = 300;
 
 // ===== JSON buffer sizes =====
 const size_t JSON_SMALL = 256;
@@ -70,6 +70,7 @@ static unsigned long gLastRightMs = 0;
 // ===== Networking =====
 WiFiClient gWifi;
 HTTPClient gHttp;
+bool gHttpInitialized = false;
 
 // ===== Key map =====
 struct IRButton {
@@ -147,24 +148,36 @@ uint32_t decodeNEC() {
 }
 
 // ===== JSON-RPC helpers =====
-bool httpPostJson(const String& body, String* out = nullptr) {
-  String url = String("http://") + KODI_HOST + ":" + KODI_PORT + "/jsonrpc";
-  gHttp.setTimeout(HTTP_TIMEOUT_MS);
-  gHttp.begin(gWifi, url);
-
-  if (KODI_AUTH) {
-    String auth = String(KODI_USER) + ":" + String(KODI_PASS);
-    gHttp.addHeader("Authorization", "Basic " + base64::encode(auth));
+void initHttp() {
+  if (!gHttpInitialized) {
+    String url = String("http://") + KODI_HOST + ":" + KODI_PORT + "/jsonrpc";
+    gHttp.setTimeout(HTTP_TIMEOUT_MS);
+    gHttp.begin(gWifi, url);
+    gHttp.setReuse(true); 
+    
+    if (KODI_AUTH) {
+      String auth = String(KODI_USER) + ":" + String(KODI_PASS);
+      gHttp.addHeader("Authorization", "Basic " + base64::encode(auth));
+    }
+    gHttp.addHeader("Content-Type", "application/json");
+    gHttp.addHeader("Connection", "keep-alive");  
+    
+    gHttpInitialized = true;
   }
-  gHttp.addHeader("Content-Type", "application/json");
+}
 
+bool httpPostJson(const String& body, String* out = nullptr) {
+  initHttp(); 
+  
   int code = gHttp.POST(body);
   if (code == 200) {
     if (out) *out = gHttp.getString();
-    gHttp.end();
     return true;
   }
+  
   Serial.printf("HTTP %d for %s\n", code, body.c_str());
+  
+  gHttpInitialized = false;
   gHttp.end();
   return false;
 }
@@ -368,6 +381,7 @@ void setup() {
   Serial.printf("WiFi SSID: %s  Kodi: %s:%d\n", WIFI_SSID, KODI_HOST, KODI_PORT);
 
   WiFi.mode(WIFI_STA);
+  WiFi.setSleepMode(WIFI_NONE_SLEEP);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   while (WiFi.status() != WL_CONNECTED) { delay(300); Serial.print("."); }
   Serial.printf("\nWiFi connected, IP %s\n", WiFi.localIP().toString().c_str());
